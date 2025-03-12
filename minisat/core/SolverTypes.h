@@ -143,7 +143,8 @@ class Clause {
         unsigned learnt    : 1;
         unsigned has_extra : 1;
         unsigned reloced   : 1;
-        unsigned size      : 27; }                        header;
+        unsigned used      : 1;
+        unsigned size      : 26; }                        header;
     union { Lit lit; float act; uint32_t abs; CRef rel; } data[0];
 
     friend class ClauseAllocator;
@@ -154,6 +155,7 @@ class Clause {
         header.learnt    = learnt;
         header.has_extra = use_extra;
         header.reloced   = 0;
+        header.used      = 0;
         header.size      = ps.size();
 
         for (int i = 0; i < ps.size(); i++) 
@@ -200,6 +202,9 @@ public:
     uint32_t     mark        ()      const   { return header.mark; }
     void         mark        (uint32_t m)    { header.mark = m; }
     const Lit&   last        ()      const   { return data[header.size-1].lit; }
+    bool         used        ()      const   { return header.used; }
+    void         mark_used   ()              { header.used = true; }
+    void         mark_unused ()              { header.used = false; }
 
     bool         reloced     ()      const   { return header.reloced; }
     CRef         relocation  ()      const   { return data[0].rel; }

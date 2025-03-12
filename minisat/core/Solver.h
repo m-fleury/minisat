@@ -148,7 +148,7 @@ public:
 
     // Statistics: (read-only member variable)
     //
-    uint64_t solves, starts, decisions, rnd_decisions, propagations, conflicts;
+  uint64_t solves, starts, decisions, rnd_decisions, propagations, conflicts, deleted_used, reduced, kept_used,kept;
     uint64_t dec_vars, num_clauses, num_learnts, clauses_literals, learnts_literals, max_literals, tot_literals;
 
 protected:
@@ -368,7 +368,7 @@ inline void     Solver::setDecisionVar(Var v, bool b)
 }
 inline void     Solver::setConfBudget(int64_t x){ conflict_budget    = conflicts    + x; }
 inline void     Solver::setPropBudget(int64_t x){ propagation_budget = propagations + x; }
-inline void     Solver::interrupt(){ asynch_interrupt = true; }
+inline void     Solver::interrupt(){ asynch_interrupt = true; printStats(); }
 inline void     Solver::clearInterrupt(){ asynch_interrupt = false; }
 inline void     Solver::budgetOff(){ conflict_budget = propagation_budget = -1; }
 inline bool     Solver::withinBudget() const {

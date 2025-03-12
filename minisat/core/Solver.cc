@@ -307,8 +307,10 @@ void Solver::analyze(CRef confl, vec<Lit>& out_learnt, int& out_btlevel)
         assert(confl != CRef_Undef); // (otherwise should be UIP)
         Clause& c = ca[confl];
 
-        if (c.learnt())
-            claBumpActivity(c);
+        if (c.learnt()) {
+          claBumpActivity(c);
+	  c.mark_used ();
+	}
 
         for (int j = (p == lit_Undef) ? 0 : 1; j < c.size(); j++){
             Lit q = c[j];
@@ -584,15 +586,32 @@ void Solver::reduceDB()
     double  extra_lim = cla_inc / learnts.size();    // Remove any clause below this activity
 
     sort(learnts, reduceDB_lt(ca));
+    int tdeleted_used = 0, treduced = 0, tkept = 0, tkept_used = 0;
     // Don't delete binary or locked clauses. From the rest, delete clauses from the first half
     // and clauses with activity smaller than 'extra_lim':
     for (i = j = 0; i < learnts.size(); i++){
         Clause& c = ca[learnts[i]];
-        if (c.size() > 2 && !locked(c) && (i < learnts.size() / 2 || c.activity() < extra_lim))
-            removeClause(learnts[i]);
-        else
-            learnts[j++] = learnts[i];
+        const bool used = ca[learnts[i]].used ();
+ 	ca[learnts[i]].mark_unused();
+        if (c.size() > 2 && !locked(c) && (i < learnts.size() / 2 || c.activity() < extra_lim)) {
+	  if (used)
+	    ++tdeleted_used;
+	  ++treduced;
+          removeClause(learnts[i]);
+	}
+        else {
+          learnts[j++] = learnts[i];
+	  if (used)
+	    ++tkept_used;
+	  ++tkept;
+	}
     }
+    printf ("c deleted %d used from deleted = %d %%\n", tdeleted_used, tdeleted_used * 100 / treduced);
+    printf ("c kept %d used from kept = %d %%\n", tkept_used, tkept_used * 100 / tkept);
+    deleted_used += tdeleted_used;
+    reduced += treduced;
+    kept_used += tkept_used;
+    kept += tkept;
     learnts.shrink(i - j);
     checkGarbage();
 }
@@ -997,6 +1016,8 @@ void Solver::printStats() const
     printf("decisions             : %-12" PRIu64 "   (%4.2f %% random) (%.0f /sec)\n", decisions, (float)rnd_decisions*100 / (float)decisions, decisions   /cpu_time);
     printf("propagations          : %-12" PRIu64 "   (%.0f /sec)\n", propagations, propagations/cpu_time);
     printf("conflict literals     : %-12" PRIu64 "   (%4.2f %% deleted)\n", tot_literals, (max_literals - tot_literals)*100 / (double)max_literals);
+    printf("deleted used          : %-12" PRIu64 "   (%4.2f %% deleted)\n", deleted_used, (double)(deleted_used*100) / (double)reduced);
+    printf("kept used             : %-12" PRIu64 "   (%4.2f %% deleted)\n", kept_used, (double)(kept_used*100) / (double)kept);
     if (mem_used != 0) printf("Memory used           : %.2f MB\n", mem_used);
     printf("CPU time              : %g s\n", cpu_time);
 }

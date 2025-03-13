@@ -1021,6 +1021,7 @@ void Solver::printStats() const
     printf("reduced               : %-12" PRIu64 "   (%4.2f %% conflict)\n", reduced, (double)(reduced*100) / (double)conflicts);
     if (mem_used != 0) printf("Memory used           : %.2f MB\n", mem_used);
     printf("CPU time              : %g s\n", cpu_time);
+    fflush (stdout);
 }
 
 

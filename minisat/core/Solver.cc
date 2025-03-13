@@ -606,8 +606,8 @@ void Solver::reduceDB()
 	  ++tkept;
 	}
     }
-    printf ("c deleted %d used from deleted = %d %%\n", tdeleted_used, tdeleted_used * 100 / treduced);
-    printf ("c kept %d used from kept = %d %%\n", tkept_used, tkept_used * 100 / tkept);
+    printf ("c deleted %d used from %d deleted = %d %%\n", tdeleted_used, treduced, tdeleted_used * 100 / treduced);
+    printf ("c kept %d used from %d kept = %d %%\n", tkept_used, tkept, tkept_used * 100 / tkept);
     deleted_used += tdeleted_used;
     reduced += treduced;
     kept_used += tkept_used;
@@ -1018,6 +1018,7 @@ void Solver::printStats() const
     printf("conflict literals     : %-12" PRIu64 "   (%4.2f %% deleted)\n", tot_literals, (max_literals - tot_literals)*100 / (double)max_literals);
     printf("deleted used          : %-12" PRIu64 "   (%4.2f %% deleted)\n", deleted_used, (double)(deleted_used*100) / (double)reduced);
     printf("kept used             : %-12" PRIu64 "   (%4.2f %% deleted)\n", kept_used, (double)(kept_used*100) / (double)kept);
+    printf("reduced               : %-12" PRIu64 "   (%4.2f %% conflict)\n", reduced, (double)(reduced*100) / (double)conflicts);
     if (mem_used != 0) printf("Memory used           : %.2f MB\n", mem_used);
     printf("CPU time              : %g s\n", cpu_time);
 }
